@@ -188,6 +188,54 @@ Difference with a paired 95% bootstrap interval over seeds and tasks. Deployed p
 | filter_oracle minus filter_rule, round 2 | true hack rate H | -0.486 [-0.695, -0.267] |
 | filter_oracle minus filter_rule, round 2 | true success | +0.381 [+0.133, +0.619] |
 
+### Pre-specified test for H1 (spec section 8), on candidates
+
+Round 2 candidate minus round 1 candidate, so the effect of round 2 training is not hidden by gate rejections. When the gate rejected the round 2 candidate, the deployed table repeats round 1 for that seed.
+
+| arm | metric | difference |
+|---|---|---|
+| filter_oracle | undetected by D_rule | +0.000 [-0.057, +0.057] |
+| filter_oracle | reported by D_rule | -0.019 [-0.076, +0.000] |
+| filter_oracle | true hack rate H | +0.010 [-0.057, +0.076] |
+| filter_oracle | true success | +0.019 [-0.124, +0.171] |
+| filter_rule | undetected by D_rule | -0.086 [-0.295, +0.105] |
+| filter_rule | reported by D_rule | -0.086 [-0.267, +0.057] |
+| filter_rule | true hack rate H | -0.086 [-0.295, +0.105] |
+| filter_rule | true success | +0.067 [-0.095, +0.219] |
+| filter_sim | undetected by D_rule | -0.057 [-0.190, +0.029] |
+| filter_sim | reported by D_rule | -0.048 [-0.229, +0.095] |
+| filter_sim | true hack rate H | -0.029 [-0.171, +0.086] |
+| filter_sim | true success | +0.000 [-0.133, +0.143] |
+| iso_fix | undetected by D_rule | -0.457 [-0.629, -0.305] |
+| iso_fix | reported by D_rule | -0.038 [-0.095, +0.000] |
+| iso_fix | true hack rate H | -0.457 [-0.629, -0.305] |
+| iso_fix | true success | +0.400 [+0.181, +0.619] |
+| iso_from_start | undetected by D_rule | +0.000 [-0.076, +0.076] |
+| iso_from_start | reported by D_rule | +0.010 [+0.000, +0.057] |
+| iso_from_start | true hack rate H | +0.000 [-0.076, +0.076] |
+| iso_from_start | true success | -0.029 [-0.143, +0.086] |
+| weak_only | undetected by D_rule | -0.086 [-0.190, +0.000] |
+| weak_only | reported by D_rule | -0.029 [-0.143, +0.095] |
+| weak_only | true hack rate H | -0.124 [-0.257, +0.000] |
+| weak_only | true success | +0.029 [-0.124, +0.200] |
+
+### Does the detector make the report cleaner than no detector?
+
+| comparison | metric | difference |
+|---|---|---|
+| filter_rule minus weak_only, round 2 | reported by D_rule | -0.048 [-0.267, +0.229] |
+
+### Noise floor: two arms that are identical through round 1
+
+`iso_fix` and `filter_rule` have the same config, seed, starting adapter and curated data in round 1. Their round 1 candidates differ only by training and sampling nondeterminism. Any arm difference of this size is noise.
+
+| comparison | metric | difference |
+|---|---|---|
+| iso_fix minus filter_rule, round 1 candidates | undetected by D_rule | -0.038 [-0.143, +0.048] |
+| iso_fix minus filter_rule, round 1 candidates | reported by D_rule | -0.076 [-0.210, +0.029] |
+| iso_fix minus filter_rule, round 1 candidates | true hack rate H | -0.038 [-0.143, +0.048] |
+| iso_fix minus filter_rule, round 1 candidates | true success | +0.067 [-0.086, +0.210] |
+
 ## Loop internals per run
 
 | arm | seed | round | signal | collected | kept as positives | flagged | failure types | gate: candidate vs deployed signal success | decision |

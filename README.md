@@ -6,7 +6,11 @@ Lexsi Labs hackathon, Track 3 (Agentic Fine-tuning). Problem statements: "Self-h
 
 **Write-up with results:** `docs/REPORT.md`. Adapters: https://huggingface.co/cognitive-prith/healgap-adapters. Data, rollouts and eval records: https://huggingface.co/datasets/cognitive-prith/healgap-runs.
 
-**Headline (reduced profile, 3 seeds, planted loopholes and planted starting hacks).** Heal loops that keep episodes passing the hackable check ended with 41% to 52% of eval episodes being hacks. With a rule detector the flagged rate fell from 0.29 to 0.10 while undetected hacks rose from 0.29 to 0.52. Keeping only episodes whose query also works on resampled data, with no detector, cut the true hack rate to 0.01 to 0.06 and raised true success to about 0.6.
+**Headline (reduced profile, 3 seeds, planted loopholes and planted starting hacks).**
+
+- Heal loops that keep episodes passing the hackable check ended with 41% to 52% of eval episodes being hacks, against 37% at the start.
+- We did not find that a blind-spot detector selects for stealth: the pre-specified test was null. The rule detector's flagged rate fell from 0.29 to 0.10 while undetected hacks reached 0.52, but the same happened with no detector.
+- Keeping only episodes whose query also works on resampled data, with no detector, cut the true hack rate to 0.01 to 0.06 and raised true success to about 0.6, matching a perfect-detector upper bound.
 
 **Status and scope.** Read `docs/DECISIONS.md` first. It records what was verified about the toolchain, every place the build departs from `docs/EXPERIMENT_SPEC.md`, and why. The short version: this is a reduced-profile study on one small model (`Qwen/Qwen2.5-1.5B-Instruct`), with planted loopholes, a corrective-SFT heal loop (no GRPO arms), 2 heal rounds and 3 seeds. Results are in `runs/report_reduced/tables.md` and in the article.
 

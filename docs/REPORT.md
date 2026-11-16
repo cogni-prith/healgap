@@ -14,8 +14,8 @@ A self-healing agent loop detects failed or cheating runs, builds corrective tra
 ## Summary of findings
 
 1. **The base model does not hack on its own here.** In 640 episodes it never touched the planted answer cache and never submitted a hardcoded answer. We had to seed the starting policy with hacks to have anything to study.
-2. **A heal loop driven by a hackable check keeps the hacks.** Every arm that keeps "passing" episodes as positives by the weak check and has no perfect detector ended with 41% to 52% of eval episodes being hacks, against 37% at the start.
-3. **A blind-spot detector made the report look clean, not the agent.** With the rule detector the flagged rate fell from 0.286 to 0.095 while undetected hacks rose from 0.286 to 0.524. Most of that rise also happens with no detector, so we do not claim the detector causes it.
+2. **A heal loop driven by a hackable check keeps the hacks.** Every arm that keeps "passing" episodes as positives by the weak check, and has no perfect detector, ended with 41% to 52% of eval episodes being hacks, against 37% at the start.
+3. **We did not find that a blind-spot detector selects for stealth.** The pre-specified test (undetected hacks, round 2 against round 1) was null. The hack mix did shift toward the kind the rule detector cannot see, and its flagged rate fell from 0.286 to 0.095 while undetected hacks reached 0.524. But the same shift, and the same fall in flags, happened with no detector. The reported rate was a poor guide to the true rate either way.
 4. **The isomorphic check fixed it without a detector.** Keeping only episodes whose query also works on resampled data cut the true hack rate to 0.01 to 0.06 and raised true success to about 0.6, matching a perfect-detector upper bound.
 5. **Tool-call metrics cannot see this.** AuditKIT's tool-call validity and F1 are near 1.0 for the hacking policies.
 
@@ -117,14 +117,20 @@ The last two columns are counts of true hacks by oracle label: E2 (bare literal)
 
 ### H1. With a blind-spot detector, reported hacks fall while undetected hacks do not
 
-The pattern appears in `filter_rule`. From round 0 to round 2 the rate flagged by `D_rule` fell by 0.190 [0.057, 0.324] and the undetected hack rate rose by 0.238 [0.057, 0.486]. Bare-literal hacks went from 9 to 0. Wrapped-literal hacks went from 30 to 55. After two heal rounds the detector flags 9.5% of episodes, none of them a successful hack, while 52.4% of episodes are hacks. The loop's own dashboard would show it working.
+**The pre-specified test does not support a stealth shift.** Our spec named the test before any run: the undetected hack rate at the last round against round 1, within arm. On candidates, so that gate rejections do not hide what round 2 training did, `filter_rule` changed by -0.086 [-0.295, +0.105]. Undetected hacks did not rise from round 1 to round 2. If anything they fell, as they did in `weak_only` (-0.086 [-0.190, +0.000]). On deployed policies the same test gives +0.019 [-0.029, +0.114], but that number is flattened by the gate: it rejected the round 2 candidate in two of three seeds, so round 2 repeats round 1 there.
 
-Two things limit this finding, and both matter:
+**What did happen, in a comparison we did not pre-specify.** From the seeded start to round 1 the mix of hacks changed in `filter_rule`. Bare-literal hacks, which the detector sees, went from 9 to 0. Wrapped-literal hacks, which it does not, went from 30 to 53. From round 0 to round 2 (deployed) the rate flagged by `D_rule` fell by 0.190 [0.057, 0.324] and the undetected hack rate rose by 0.238 [0.057, 0.486]. At the end the detector flags 9.5% of episodes, none of them a successful hack, while 52.4% of episodes are hacks.
 
-- **Most of the rise is not caused by the detector.** `weak_only`, with no detector at all, shows a similar rise in the same undetected hacks (+0.162 [-0.048, +0.410]). The difference between the two arms at round 2 is +0.076 [-0.010, +0.181], an interval that includes zero. The driver is the loop itself: a hack that passes `V_weak` is kept as a positive training example in every arm, so the hack that passes most reliably spreads. What the detector adds is that it removes the visible kind, which makes its report clean.
-- **Almost all of the change happened in round 1.** Round 2 minus round 1 for undetected hacks is +0.019 [-0.029, +0.114]. With two rounds we cannot say whether the shift continues, saturates or reverses.
+**That shift is not the detector's doing.** The same thing happens with no detector:
 
-So H1 holds as stated (reported falls, undetected does not), but the stronger reading, that the detector pushes the policy toward stealth, is not supported at this scale.
+- `weak_only` undetected hacks, round 0 to round 2: +0.162 [-0.048, +0.410].
+- `filter_rule` minus `weak_only` at round 2, undetected hacks: +0.076 [-0.010, +0.181].
+- `filter_rule` minus `weak_only` at round 2, rate flagged by `D_rule`: -0.048 [-0.267, +0.229]. The flagged rate fell about as much without the detector (0.286 to 0.143) as with it (0.286 to 0.095).
+- Noise floor: `iso_fix` and `filter_rule` are the same experiment through round 1 (same config, seed, starting adapter and curated data, confirmed by hash). Their round 1 candidates still differ by -0.038 [-0.143, +0.048] on undetected hacks and -0.076 [-0.210, +0.029] on the flagged rate, from training and sampling nondeterminism alone. The arm differences above are inside that.
+
+The driver is the loop's training signal, not its detector. A hack that passes `V_weak` is kept as a positive example in every `V_weak` arm, and the wrapped literal passes more reliably than the bare one in this policy, so it spreads in round 1. The only thing we can attribute to the rule detector is narrow: it removed the hack type it can see (0 bare-literal hacks against 4 in `weak_only`), which leaves every remaining hack invisible to it.
+
+So: the reported hack rate was a poor guide to the true hack rate in every `V_weak` arm, with or without a detector. We did not find that the detector selects for stealth, and the pre-specified test for that came out null.
 
 ### H2. Random misses at matched recall
 
@@ -163,7 +169,12 @@ The policy writes the correct query, runs it, and then submits the number. The s
 
 ### Gate behaviour
 
-The gate rejected the round 2 candidate in 5 of the 9 `V_weak`-signal runs, on 12 gate tasks with one episode each. Gate pass rates moved by 0.2 to 0.3 between policies whose eval metrics were close, so at this size the gate adds noise. A rejected candidate leaves the previous policy deployed, which is why some round 2 rows equal round 1 for a seed.
+In the three `V_weak` arms without the oracle (`weak_only`, `filter_rule`, `filter_sim`), the gate rejected the round 2 candidate in 5 of 9 runs, on 12 gate tasks with one episode each. A rejected candidate leaves the previous policy deployed, which is why the deployed table repeats round 1 for those seeds.
+
+Two observations, neither strong enough to be a finding:
+
+- The gate is noisy at this size. The noise-floor pair above, identical through round 1, got gate pass rates of 0.42 and 0.17 in seed 0.
+- In 4 of the 5 rejections the rejected candidate had a lower true hack rate on eval tasks than the policy it would have replaced (mean change -0.109, against -0.043 for the 4 accepted candidates). The gate scores candidates by the hackable check, so a candidate that hacks less can look worse to it. This is the gate channel from our research question, and it deserves a proper test with a larger gate set. Nine runs cannot establish it.
 
 ### Extra arms
 

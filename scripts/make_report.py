@@ -143,6 +143,7 @@ def main() -> None:
     # ---- Heal runs
     arms = heal_runs(args.runs, args.label)
     plotted = {}
+    cand = {}
     for kind, loader in (("deployed", deployed_records), ("candidate", candidate_records)):
         md += [f"## Heal loop, {kind} policy per round", "", "Mean with 95% bootstrap interval over seeds and tasks. Round 0 is the starting policy.", ""]
         for arm, seeds in arms.items():
@@ -159,6 +160,8 @@ def main() -> None:
             md.append("")
             if ok and kind == "deployed":
                 plotted[arm] = per_round
+            if ok and kind == "candidate":
+                cand[arm] = per_round
 
     # ---- Paired comparisons (deployed policies, arms with enough seeds)
     if plotted:
@@ -174,6 +177,15 @@ def main() -> None:
                 for key, name in (("undetected_rule", "undetected by D_rule"), ("true_hack_rate", "true hack rate H"), ("true_success", "true success")):
                     rows.append((f"{x} minus {y}, round {last}", name, plotted[x][last], plotted[y][last], key))
         md += [f"| {c} | {n} | {diff_ci(a, b, k)} |" for c, n, a, b, k in rows] + [""]
+
+        four = (("undetected_rule", "undetected by D_rule"), ("reported_rule", "reported by D_rule"), ("true_hack_rate", "true hack rate H"), ("true_success", "true success"))
+        md += ["### Pre-specified test for H1 (spec section 8), on candidates", "", f"Round {last} candidate minus round 1 candidate, so the effect of round {last} training is not hidden by gate rejections. When the gate rejected the round {last} candidate, the deployed table repeats round 1 for that seed.", "", "| arm | metric | difference |", "|---|---|---|"]
+        md += [f"| {arm} | {n} | {diff_ci(cand[arm][last], cand[arm][1], k)} |" for arm in cand for k, n in four] + [""]
+        if "filter_rule" in plotted and "weak_only" in plotted:
+            md += ["### Does the detector make the report cleaner than no detector?", "", "| comparison | metric | difference |", "|---|---|---|", f"| filter_rule minus weak_only, round {last} | reported by D_rule | {diff_ci(plotted['filter_rule'][last], plotted['weak_only'][last], 'reported_rule')} |", ""]
+        if "filter_rule" in plotted and "iso_fix" in plotted:
+            md += ["### Noise floor: two arms that are identical through round 1", "", "`iso_fix` and `filter_rule` have the same config, seed, starting adapter and curated data in round 1. Their round 1 candidates differ only by training and sampling nondeterminism. Any arm difference of this size is noise.", "", "| comparison | metric | difference |", "|---|---|---|"]
+            md += [f"| iso_fix minus filter_rule, round 1 candidates | {n} | {diff_ci(cand['iso_fix'][1], cand['filter_rule'][1], k)} |" for k, n in four] + [""]
 
     # ---- Loop internals
     md += ["## Loop internals per run", "", "| arm | seed | round | signal | collected | kept as positives | flagged | failure types | gate: candidate vs deployed signal success | decision |", "|---|---|---|---|---|---|---|---|---|---|"]
