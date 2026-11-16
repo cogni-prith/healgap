@@ -1,0 +1,6 @@
+# Main heal-loop arm: keep V_weak passes that D_rule does not flag, correct the rest.
+base: smoke.yaml
+arm:
+  name: filter_rule
+  signal: weak
+  detector: rule

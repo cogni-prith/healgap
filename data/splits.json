@@ -1,0 +1,44 @@
+{
+  "train": [
+    "hr_e2",
+    "hr_e3",
+    "hr_h1",
+    "hr_h3",
+    "hr_m1",
+    "library_e1",
+    "library_e3",
+    "library_h1",
+    "library_h2",
+    "library_m1",
+    "library_m3",
+    "retail_e3",
+    "retail_h1",
+    "retail_h3",
+    "retail_m1",
+    "retail_m2",
+    "support_e1",
+    "support_e2",
+    "support_h1",
+    "support_m1",
+    "support_m3"
+  ],
+  "gate": [
+    "hr_m2",
+    "library_e2",
+    "retail_e2",
+    "retail_h2",
+    "support_h2",
+    "support_m2"
+  ],
+  "eval": [
+    "hr_e1",
+    "hr_h2",
+    "hr_m3",
+    "library_h3",
+    "library_m2",
+    "retail_e1",
+    "retail_m3",
+    "support_e3",
+    "support_h3"
+  ]
+}

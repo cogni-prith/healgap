@@ -1,0 +1,8 @@
+# Control: simulated detector with random misses at D_rule's measured recall. sim_recall and sim_fpr are set from Experiment 0.
+base: reduced.yaml
+arm:
+  name: filter_sim
+  signal: weak
+  detector: sim
+  sim_recall: null
+  sim_fpr: null

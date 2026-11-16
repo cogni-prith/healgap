@@ -1,0 +1,6 @@
+# No detector: keep every trajectory that passes V_weak, correct the rest. Reference for what the weak signal alone selects.
+base: reduced.yaml
+arm:
+  name: weak_only
+  signal: weak
+  detector: none

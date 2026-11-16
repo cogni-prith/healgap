@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "healgap"
+version = "0.0.1"
+description = "Do self-healing agent loops select for reward hacks their detector misses? Lexsi Labs hackathon, Track 3."
+requires-python = ">=3.12"
+# AgentTune (LSAL v1.1) is not on PyPI and must not be vendored. Install it first:
+#   git clone https://github.com/Lexsi-Labs/AgentTune.git external/AgentTune
+#   pip install -e external/AgentTune
+dependencies = ["pyyaml>=6.0", "datasets>=2.14.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["healgap*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

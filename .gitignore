@@ -1,0 +1,9 @@
+external/
+.venv/
+runs/
+data/visible/
+data/iso_train/
+data/hidden/
+__pycache__/
+*.egg-info/
+.pytest_cache/

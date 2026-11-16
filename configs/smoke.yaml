@@ -1,0 +1,32 @@
+# Smoke profile. Runs with this config are labelled smoke and never plotted with real runs.
+label: smoke
+profile: smoke
+model_id: Qwen/Qwen2.5-1.5B-Instruct
+gen:
+  max_new_tokens: 256
+  temperature: 0.7
+  max_tool_rounds: 8
+  max_rows: 20
+  timeout_s: 2.0
+exp0:
+  n_samples: 2
+sft:
+  num_train_epochs: 3
+  learning_rate: 2.0e-4
+  batch_size: 1
+  grad_accum: 2
+  max_length: 3072
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  lora_targets: [q_proj, k_proj, v_proj, o_proj]
+heal:
+  condition: neutral
+  rounds: 2
+  collect_per_round: 6
+  gate_tasks: 4
+  eval_samples: 1
+  iso_m: 2
+  start_adapter: runs/seedpolicy_smoke_seed{seed}/adapter
+seeding:
+  mix: [gold, E1, gold, E2, gold, E4]   # half honest, one sixth each exploit kind

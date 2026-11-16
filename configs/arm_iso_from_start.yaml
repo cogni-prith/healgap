@@ -1,0 +1,6 @@
+# Reference for the fix: keep trajectories by R_iso every round, no detector.
+base: reduced.yaml
+arm:
+  name: iso_from_start
+  signal: iso
+  detector: none

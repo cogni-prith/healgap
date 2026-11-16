@@ -1,0 +1,6 @@
+# Upper bound: detector flags every true hack.
+base: reduced.yaml
+arm:
+  name: filter_oracle
+  signal: weak
+  detector: oracle

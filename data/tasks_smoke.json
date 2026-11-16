@@ -1,0 +1,362 @@
+[
+ {
+  "task_id": "R-0001",
+  "family": "retail",
+  "template_id": "retail_e1",
+  "tier": "easy",
+  "question": "How many orders have the status 'delivered'?",
+  "gold_sql": "SELECT COUNT(*) FROM orders WHERE status = 'delivered'",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0002",
+  "family": "retail",
+  "template_id": "retail_e2",
+  "tier": "easy",
+  "question": "List the names of products in the 'home' category that cost more than 57.",
+  "gold_sql": "SELECT name FROM products WHERE category = 'home' AND price > 57",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0003",
+  "family": "retail",
+  "template_id": "retail_e3",
+  "tier": "easy",
+  "question": "How many customers live in Osaka?",
+  "gold_sql": "SELECT COUNT(*) FROM customers WHERE city = 'Osaka'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0004",
+  "family": "retail",
+  "template_id": "retail_m1",
+  "tier": "medium",
+  "question": "How many orders has the customer named 'Ben Jensen' placed?",
+  "gold_sql": "SELECT COUNT(*) FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE c.name = 'Ben Jensen'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0005",
+  "family": "retail",
+  "template_id": "retail_m2",
+  "tier": "medium",
+  "question": "What is the total quantity ordered of the product named 'Pro Lamp'?",
+  "gold_sql": "SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN products p ON oi.product_id = p.product_id WHERE p.name = 'Pro Lamp'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0006",
+  "family": "retail",
+  "template_id": "retail_m3",
+  "tier": "medium",
+  "question": "For each order status, how many orders were placed by customers in the 'business' segment? Return status and count.",
+  "gold_sql": "SELECT o.status, COUNT(*) FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE c.segment = 'business' GROUP BY o.status",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0007",
+  "family": "retail",
+  "template_id": "retail_h1",
+  "tier": "hard",
+  "question": "Which 3 customers spent the most (quantity times price) on orders with status 'cancelled'? Return customer name and total spent, highest first, ties broken by name.",
+  "gold_sql": "SELECT c.name, SUM(oi.quantity * p.price) AS total FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'cancelled' GROUP BY c.customer_id, c.name ORDER BY total DESC, c.name ASC LIMIT 3",
+  "ordered": true,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0008",
+  "family": "retail",
+  "template_id": "retail_h2",
+  "tier": "hard",
+  "question": "For each product category, what is the total revenue (quantity times price) from customers who live in Austin? Return category and revenue.",
+  "gold_sql": "SELECT p.category, SUM(oi.quantity * p.price) FROM order_items oi JOIN products p ON p.product_id = oi.product_id JOIN orders o ON o.order_id = oi.order_id JOIN customers c ON c.customer_id = o.customer_id WHERE c.city = 'Austin' GROUP BY p.category",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0009",
+  "family": "retail",
+  "template_id": "retail_h3",
+  "tier": "hard",
+  "question": "List the names of customers in the 'business' segment who have no order with status 'shipped'.",
+  "gold_sql": "SELECT c.name FROM customers c WHERE c.segment = 'business' AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'shipped')",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0010",
+  "family": "hr",
+  "template_id": "hr_e1",
+  "tier": "easy",
+  "question": "How many employees have the title 'analyst'?",
+  "gold_sql": "SELECT COUNT(*) FROM employees WHERE title = 'analyst'",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0011",
+  "family": "hr",
+  "template_id": "hr_e2",
+  "tier": "easy",
+  "question": "List the names of employees hired after 2010 who earn more than 134000.",
+  "gold_sql": "SELECT name FROM employees WHERE hire_year > 2010 AND salary > 134000",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0012",
+  "family": "hr",
+  "template_id": "hr_e3",
+  "tier": "easy",
+  "question": "What is the highest salary among employees with the title 'engineer'?",
+  "gold_sql": "SELECT MAX(salary) FROM employees WHERE title = 'engineer'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0013",
+  "family": "hr",
+  "template_id": "hr_m1",
+  "tier": "medium",
+  "question": "How many employees work in the department named 'Marketing'?",
+  "gold_sql": "SELECT COUNT(*) FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE d.name = 'Marketing'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0014",
+  "family": "hr",
+  "template_id": "hr_m2",
+  "tier": "medium",
+  "question": "What is the total number of hours assigned to the project named 'Project Garnet'?",
+  "gold_sql": "SELECT COALESCE(SUM(a.hours), 0) FROM assignments a JOIN projects p ON a.project_id = p.project_id WHERE p.name = 'Project Garnet'",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0015",
+  "family": "hr",
+  "template_id": "hr_m3",
+  "tier": "medium",
+  "question": "For each department, how many employees were hired in or after 2023? Return department name and count.",
+  "gold_sql": "SELECT d.name, COUNT(*) FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE e.hire_year >= 2023 GROUP BY d.dept_id, d.name",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0016",
+  "family": "hr",
+  "template_id": "hr_h1",
+  "tier": "hard",
+  "question": "Which 3 employees have the most hours assigned on projects owned by the department named 'Marketing'? Return employee name and total hours, highest first, ties broken by name.",
+  "gold_sql": "SELECT e.name, SUM(a.hours) AS total FROM employees e JOIN assignments a ON a.emp_id = e.emp_id JOIN projects p ON p.project_id = a.project_id JOIN departments d ON d.dept_id = p.dept_id WHERE d.name = 'Marketing' GROUP BY e.emp_id, e.name ORDER BY total DESC, e.name ASC LIMIT 3",
+  "ordered": true,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0017",
+  "family": "hr",
+  "template_id": "hr_h2",
+  "tier": "hard",
+  "question": "For each department, what is the total salary of employees who are assigned to at least one project with a budget above 35000? Return department name and total salary.",
+  "gold_sql": "SELECT d.name, SUM(e.salary) FROM employees e JOIN departments d ON d.dept_id = e.dept_id WHERE EXISTS (SELECT 1 FROM assignments a JOIN projects p ON p.project_id = a.project_id WHERE a.emp_id = e.emp_id AND p.budget > 35000) GROUP BY d.dept_id, d.name",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0018",
+  "family": "hr",
+  "template_id": "hr_h3",
+  "tier": "hard",
+  "question": "List the names of employees in departments located in Hanoi who have no project assignments.",
+  "gold_sql": "SELECT e.name FROM employees e JOIN departments d ON d.dept_id = e.dept_id WHERE d.location = 'Hanoi' AND NOT EXISTS (SELECT 1 FROM assignments a WHERE a.emp_id = e.emp_id)",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0019",
+  "family": "library",
+  "template_id": "library_e1",
+  "tier": "easy",
+  "question": "How many books are in the 'science' genre?",
+  "gold_sql": "SELECT COUNT(*) FROM books WHERE genre = 'science'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0020",
+  "family": "library",
+  "template_id": "library_e2",
+  "tier": "easy",
+  "question": "List the titles of 'mystery' books published before 1961.",
+  "gold_sql": "SELECT title FROM books WHERE genre = 'mystery' AND pub_year < 1961",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0021",
+  "family": "library",
+  "template_id": "library_e3",
+  "tier": "easy",
+  "question": "How many loans made in 2024 have not been returned (returned = 0)?",
+  "gold_sql": "SELECT COUNT(*) FROM loans WHERE loan_year = 2024 AND returned = 0",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0022",
+  "family": "library",
+  "template_id": "library_m1",
+  "tier": "medium",
+  "question": "How many books were written by the author named 'Finn Farouk'?",
+  "gold_sql": "SELECT COUNT(*) FROM books b JOIN authors a ON b.author_id = a.author_id WHERE a.name = 'Finn Farouk'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0023",
+  "family": "library",
+  "template_id": "library_m2",
+  "tier": "medium",
+  "question": "How many loans has the member named 'Gita Banerjee' made?",
+  "gold_sql": "SELECT COUNT(*) FROM loans l JOIN members m ON l.member_id = m.member_id WHERE m.name = 'Gita Banerjee'",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0024",
+  "family": "library",
+  "template_id": "library_m3",
+  "tier": "medium",
+  "question": "For each book genre, how many loans were made in 2023? Return genre and count.",
+  "gold_sql": "SELECT b.genre, COUNT(*) FROM loans l JOIN books b ON l.book_id = b.book_id WHERE l.loan_year = 2023 GROUP BY b.genre",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0025",
+  "family": "library",
+  "template_id": "library_h1",
+  "tier": "hard",
+  "question": "Which 3 authors have the most loans of their books by members who live in Osaka? Return author name and loan count, highest first, ties broken by name.",
+  "gold_sql": "SELECT a.name, COUNT(*) AS n FROM authors a JOIN books b ON b.author_id = a.author_id JOIN loans l ON l.book_id = b.book_id JOIN members m ON m.member_id = l.member_id WHERE m.city = 'Osaka' GROUP BY a.author_id, a.name ORDER BY n DESC, a.name ASC LIMIT 3",
+  "ordered": true,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0026",
+  "family": "library",
+  "template_id": "library_h2",
+  "tier": "hard",
+  "question": "For each author country, how many distinct members have borrowed a 'history' book by an author from that country? Return country and member count.",
+  "gold_sql": "SELECT a.country, COUNT(DISTINCT l.member_id) FROM authors a JOIN books b ON b.author_id = a.author_id JOIN loans l ON l.book_id = b.book_id WHERE b.genre = 'history' GROUP BY a.country",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0027",
+  "family": "library",
+  "template_id": "library_h3",
+  "tier": "hard",
+  "question": "List the titles of 'mystery' books that have never been loaned.",
+  "gold_sql": "SELECT b.title FROM books b WHERE b.genre = 'mystery' AND NOT EXISTS (SELECT 1 FROM loans l WHERE l.book_id = b.book_id)",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0028",
+  "family": "support",
+  "template_id": "support_e1",
+  "tier": "easy",
+  "question": "How many tickets have priority 'medium' and status 'waiting'?",
+  "gold_sql": "SELECT COUNT(*) FROM tickets WHERE priority = 'medium' AND status = 'waiting'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0029",
+  "family": "support",
+  "template_id": "support_e2",
+  "tier": "easy",
+  "question": "List the names of clients on the 'team' plan in the north region.",
+  "gold_sql": "SELECT name FROM clients WHERE plan = 'team' AND region = 'north'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0030",
+  "family": "support",
+  "template_id": "support_e3",
+  "tier": "easy",
+  "question": "How many tickets were opened in month 10?",
+  "gold_sql": "SELECT COUNT(*) FROM tickets WHERE opened_month = 10",
+  "ordered": false,
+  "split": "eval"
+ },
+ {
+  "task_id": "R-0031",
+  "family": "support",
+  "template_id": "support_m1",
+  "tier": "medium",
+  "question": "How many tickets are assigned to the agent named 'Kira Farouk'?",
+  "gold_sql": "SELECT COUNT(*) FROM tickets t JOIN agents a ON t.agent_id = a.agent_id WHERE a.name = 'Kira Farouk'",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0032",
+  "family": "support",
+  "template_id": "support_m2",
+  "tier": "medium",
+  "question": "How many tickets has the client named 'Leo Petrov' opened?",
+  "gold_sql": "SELECT COUNT(*) FROM tickets t JOIN clients c ON t.client_id = c.client_id WHERE c.name = 'Leo Petrov'",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0033",
+  "family": "support",
+  "template_id": "support_m3",
+  "tier": "medium",
+  "question": "For each ticket priority, how many tickets come from clients on the 'team' plan? Return priority and count.",
+  "gold_sql": "SELECT t.priority, COUNT(*) FROM tickets t JOIN clients c ON t.client_id = c.client_id WHERE c.plan = 'team' GROUP BY t.priority",
+  "ordered": false,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0034",
+  "family": "support",
+  "template_id": "support_h1",
+  "tier": "hard",
+  "question": "Which 3 agents have the most messages on their tickets with status 'open'? Return agent name and message count, highest first, ties broken by name.",
+  "gold_sql": "SELECT a.name, COUNT(*) AS n FROM agents a JOIN tickets t ON t.agent_id = a.agent_id JOIN messages m ON m.ticket_id = t.ticket_id WHERE t.status = 'open' GROUP BY a.agent_id, a.name ORDER BY n DESC, a.name ASC LIMIT 3",
+  "ordered": true,
+  "split": "train"
+ },
+ {
+  "task_id": "R-0035",
+  "family": "support",
+  "template_id": "support_h2",
+  "tier": "hard",
+  "question": "For each agent team, what is the total message length on tickets from clients in the east region? Return team and total length.",
+  "gold_sql": "SELECT a.team, SUM(m.length) FROM messages m JOIN tickets t ON t.ticket_id = m.ticket_id JOIN agents a ON a.agent_id = t.agent_id JOIN clients c ON c.client_id = t.client_id WHERE c.region = 'east' GROUP BY a.team",
+  "ordered": false,
+  "split": "gate"
+ },
+ {
+  "task_id": "R-0036",
+  "family": "support",
+  "template_id": "support_h3",
+  "tier": "hard",
+  "question": "List the names of clients on the 'team' plan who have no ticket with priority 'medium'.",
+  "gold_sql": "SELECT c.name FROM clients c WHERE c.plan = 'team' AND NOT EXISTS (SELECT 1 FROM tickets t WHERE t.client_id = c.client_id AND t.priority = 'medium')",
+  "ordered": false,
+  "split": "eval"
+ }
+]

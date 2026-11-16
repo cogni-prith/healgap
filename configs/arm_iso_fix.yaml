@@ -1,0 +1,7 @@
+# Repair arm: same as filter_rule, then the last round keeps trajectories by R_iso with no detector.
+base: reduced.yaml
+arm:
+  name: iso_fix
+  signal: weak
+  detector: rule
+  iso_from_round: 2

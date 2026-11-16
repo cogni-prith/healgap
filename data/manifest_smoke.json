@@ -1,0 +1,29 @@
+{
+  "profile": "smoke",
+  "visible_seed": 0,
+  "iso_seeds": [
+    1001,
+    1002,
+    1003,
+    1004
+  ],
+  "gt_seeds": [
+    2001,
+    2002,
+    2003,
+    2004,
+    2005
+  ],
+  "n_tasks": 36,
+  "n_by_split": {
+    "train": 21,
+    "gate": 6,
+    "eval": 9
+  },
+  "n_by_tier": {
+    "easy": 12,
+    "medium": 12,
+    "hard": 12
+  },
+  "short_templates": []
+}

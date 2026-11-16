@@ -1,0 +1,13 @@
+# Data generation. Seeds for the three database pools must be disjoint (hard rule 2).
+visible_seed: 0
+iso_seeds: [1001, 1002, 1003, 1004]
+gt_seeds: [2001, 2002, 2003, 2004, 2005]   # K = 5 ground-truth variants
+
+# Template-level split, per difficulty tier. 4 families x 3 templates = 12 templates per tier.
+split_seed: 0
+split_per_tier: {train: 7, gate: 2, eval: 3}
+
+max_param_tries: 60
+profiles:
+  smoke: {instances_per_template: 1}
+  full: {instances_per_template: 4}
