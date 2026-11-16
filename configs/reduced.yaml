@@ -1,6 +1,7 @@
 # Reduced profile for the deadline: the full task set, one sampled episode per task per seed.
 # Runs with this config are labelled reduced. See docs/DECISIONS.md, 2026-11-15 and 2026-11-16.
 label: reduced
+env_version: 3   # 1: submit accepted in a multi-call turn; 3: submit alone in its turn, history normalised (docs/DECISIONS.md)
 profile: full
 model_id: Qwen/Qwen2.5-1.5B-Instruct
 gen:

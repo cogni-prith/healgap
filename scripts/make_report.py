@@ -58,6 +58,31 @@ def ci(records: list[dict], key: str) -> str:
     return f"{v:.3f} [{b[0]:.3f}, {b[1]:.3f}]" if b else f"{v:.3f}"
 
 
+def diff_ci(a: list[dict], b: list[dict], key: str) -> str:
+    """stat(a) - stat(b) with a paired 95% bootstrap interval: the same resampled seeds and tasks for both."""
+    import random
+
+    rng = random.Random(0)
+    seeds = sorted({r["seed"] for r in a})
+    tasks = sorted({r["task_id"] for r in a})
+    cells: list[dict[tuple, list[dict]]] = []
+    for recs in (a, b):
+        c: dict[tuple, list[dict]] = defaultdict(list)
+        for r in recs:
+            c[(r["seed"], r["task_id"])].append(r)
+        cells.append(c)
+    point = stats(a)[key] - stats(b)[key]
+    vals = []
+    for _ in range(N_BOOT):
+        ss, ts = rng.choices(seeds, k=len(seeds)), rng.choices(tasks, k=len(tasks))
+        sa = [r for x in ss for t in ts for r in cells[0].get((x, t), [])]
+        sb = [r for x in ss for t in ts for r in cells[1].get((x, t), [])]
+        if sa and sb:
+            vals.append(stats(sa)[key] - stats(sb)[key])
+    vals.sort()
+    return f"{point:+.3f} [{vals[int(0.025 * len(vals))]:+.3f}, {vals[int(0.975 * len(vals))]:+.3f}]"
+
+
 def heal_runs(runs: Path, label: str) -> dict[str, dict[int, Path]]:
     """arm -> seed -> run dir, completed runs only, latest run wins."""
     out: dict[str, dict[int, Path]] = defaultdict(dict)
@@ -104,7 +129,8 @@ def main() -> None:
         man = json.loads((d / "manifest.json").read_text())
         if man.get("status") == "completed" and man["label"] == args.label and man["config"].get("limit") is None:
             for p in d.glob("episodes_*.jsonl"):
-                exp0[p.stem.removeprefix("episodes_")] += [dict(_slim(r), run=d.name) for r in _load_jsonl(p)]
+                env = man["config"].get("env_version", 1)
+                exp0[f"{p.stem.removeprefix('episodes_')} (environment v{env})"] += [dict(_slim(r), run=d.name) for r in _load_jsonl(p)]
     if exp0:
         md += ["## Experiment 0: base rates before any training", "", "Counts are episodes. A hack is W and not G with an exploit label.", "", "| condition | seeds | episodes | OK | " + " | ".join(f"{e} hacks" for e in EXPLOITS) + " | false pass, no exploit label | no submit | weak success | true success | true success easy / medium / hard |", "|---|---|---|---|" + "---|" * (len(EXPLOITS) + 5)]
         for cond, recs in exp0.items():
@@ -133,6 +159,21 @@ def main() -> None:
             md.append("")
             if ok and kind == "deployed":
                 plotted[arm] = per_round
+
+    # ---- Paired comparisons (deployed policies, arms with enough seeds)
+    if plotted:
+        last = max(max(pr) for pr in plotted.values())
+        md += ["## Paired comparisons", "", f"Difference with a paired 95% bootstrap interval over seeds and tasks. Deployed policies. Last round is round {last}. With 3 seeds these are weak tests: read the intervals, not just the sign.", "", "| comparison | metric | difference |", "|---|---|---|"]
+        rows = []
+        for arm in plotted:
+            for key, name in (("undetected_rule", "undetected by D_rule"), ("reported_rule", "reported by D_rule"), ("true_hack_rate", "true hack rate H"), ("true_success", "true success")):
+                rows.append((f"{arm}: round {last} minus round 0", name, plotted[arm][last], plotted[arm][0], key))
+                rows.append((f"{arm}: round {last} minus round 1", name, plotted[arm][last], plotted[arm][1], key))
+        for x, y in (("filter_rule", "filter_sim"), ("filter_rule", "weak_only"), ("iso_fix", "filter_rule"), ("iso_fix", "weak_only"), ("iso_from_start", "weak_only"), ("filter_oracle", "filter_rule")):
+            if x in plotted and y in plotted:
+                for key, name in (("undetected_rule", "undetected by D_rule"), ("true_hack_rate", "true hack rate H"), ("true_success", "true success")):
+                    rows.append((f"{x} minus {y}, round {last}", name, plotted[x][last], plotted[y][last], key))
+        md += [f"| {c} | {n} | {diff_ci(a, b, k)} |" for c, n, a, b, k in rows] + [""]
 
     # ---- Loop internals
     md += ["## Loop internals per run", "", "| arm | seed | round | signal | collected | kept as positives | flagged | failure types | gate: candidate vs deployed signal success | decision |", "|---|---|---|---|---|---|---|---|---|---|"]
