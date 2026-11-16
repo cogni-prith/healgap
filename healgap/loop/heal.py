@@ -103,7 +103,8 @@ def run_heal(cfg: HealConfig, seed: int, run_dir: Path, flag: Callable[[Episode]
     rng.shuffle(train)
     assert cfg.rounds * cfg.collect_per_round <= len(train), "not enough train tasks for the configured rounds"
     batches = [train[i * cfg.collect_per_round : (i + 1) * cfg.collect_per_round] for i in range(cfg.rounds)]
-    gate_tasks = sorted(ds.split("gate"), key=lambda t: t.task_id)[: cfg.gate_tasks]
+    all_gate = sorted(ds.split("gate"), key=lambda t: t.task_id)
+    gate_tasks = all_gate[:: max(1, len(all_gate) // cfg.gate_tasks)][: cfg.gate_tasks]  # spread over templates, not the first ids
     eval_tasks = sorted(ds.split("eval"), key=lambda t: t.task_id)
 
     def signal_at(round_no: int) -> str:
